@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_filters',
     'drf_yasg',
+    'debug_toolbar',
 ]
 
 CART_SESSION_ID = 'cart'
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -146,3 +148,9 @@ EMAIL_HOST_USER = 'sanghee.kim1115@gmail.com'  # ex) bum752@gmail.com
 EMAIL_HOST_PASSWORD = 's464659!'  # ex) P@ssw0rd
 SERVER_EMAIL = 'sanghee.kim1115@gmail.com'  # ex) bum752@gmail.com
 DEFAULT_FROM_MAIL = 'sanghee.kim1115'  # ex) bum752
+
+INTERNAL_IPS = [
+    # ...
+    '127.0.0.1',
+    # ...
+]

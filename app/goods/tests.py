@@ -87,7 +87,7 @@ class GoodsTest(APITestCase):
             self.assertEqual(qs[index].price, res_data['price'])
 
     def test_main_page_recommend(self):
-        self.goods = baker.make('goods.Goods', _quantity=1000)
+        self.goods = baker.make('goods.Goods', _quantity=1_000)
         response = self.client.get(f'/api/goods/main_page_recommend')
         self.assertEqual(8, len(response.data))
 

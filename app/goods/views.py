@@ -708,7 +708,7 @@ class GoodsViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericView
         return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=False)
-    def home_appliances(self, request):
+    def ice_cream(self, request):
         """
         추천 - 아이스크림 판매 랭킹
 
@@ -754,7 +754,7 @@ class GoodsViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericView
         list_length_limit = 8
         qs = Goods.objects.filter(title__icontains='닭')
         while True:
-            random_pk = random.randint(0, qs.count()-1)
+            random_pk = random.randint(0, qs.count() - 1)
             if random_pk in lst:
                 continue
             elif random_pk == 0:
