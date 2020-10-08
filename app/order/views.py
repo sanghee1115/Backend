@@ -6,8 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from carts.models import CartItem
 from core.instructors import MyAutoSchema
-from goods.models import Goods
 from order.models import Order, OrderReview, OrderDetail
 from order.permissions import OrderReviewPermission, OrderPermission
 from order.serializers import OrderCreateSerializers, ReviewUpdateSerializers, OrderSerializers, \
@@ -36,6 +36,13 @@ class OrderView(mixins.CreateModelMixin,
                 return self.queryset.filter(user_id=self.kwargs['user_pk'])
         except KeyError:
             return super().get_queryset()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['POST'])
     def payment(self, request, pk):
@@ -147,6 +154,25 @@ class OrderView(mixins.CreateModelMixin,
 class OrderDetailView(mixins.CreateModelMixin, GenericViewSet):
     queryset = OrderDetail.objects.all()
     serializer_class = OrderDetailCreateSerializers
+
+    def create(self, request, *args, **kwargs):
+        """
+        배송 상세 정보 생성
+
+        ---
+        receiving_place 값 요청에 대한 기준입니다.
+        ```
+        0, ('문 앞')
+
+        1, ('경비실')
+
+        2, ('우편함')
+
+        3, ('기타')
+        ```
+
+        """
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         order_instance = Order.objects.get(pk=self.kwargs['order_pk'])
@@ -340,3 +366,26 @@ class ReviewAPI(mixins.CreateModelMixin,
         토큰이 필요한 요청 입니다.
         """
         return super().destroy(request, *args, **kwargs)
+
+    @action(detail=False)
+    def permit(self, request, *args, **kwargs):
+        """
+        후기 쓰기 API
+
+        ----
+        해당 유저의 주문 중, 상품에 해당하는 cartItem이 준비상태라면
+
+        상품 후기는 상품을 구매하시고, 배송이 완료된 회원 분만 한 달 내에 작성이 가능합니다.를 반환하고,
+
+        카트 아이템이 배송 완료라면, 상품 후기 쓰기에 대한 데이터를 처리해준다.,
+
+        아예 없다면, 리뷰 작성이 가능한 데이터가 존재하지 않습니다.
+
+        를 반환한다.
+        """
+        goods_pk = kwargs.get('goods_pk', None)
+        cart_item_ins = CartItem.objects.filter(order__user=request.user, goods__pk=goods_pk, status='c')
+        if not cart_item_ins:
+            return Response({"message": "상품 후기는 상품을 구매하시고, 배송이 완료된 회원 분만 한 달 내에 작성이 가능합니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)

@@ -1,7 +1,8 @@
 from action_serializer import ModelActionSerializer
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from carts.models import CartItem
 from carts.serializers import CartItemSerializer
@@ -131,10 +132,11 @@ class OrderCreateSerializers(ModelSerializer):
         return value
 
 
+
 class ReviewUpdateSerializers(ModelSerializer):
     class Meta:
         model = OrderReview
-        fields = ('title', 'content')
+        fields = ('title', 'content', 'img',)
         examples = {
             "title": "update review title",
             "content": "update review content"
@@ -147,7 +149,7 @@ class ReviewListSerializers(ModelSerializer):
 
     class Meta:
         model = OrderReview
-        fields = ('id', 'user', 'created_at', 'title', 'content', 'goods')
+        fields = ('id', 'user', 'created_at', 'img', 'title', 'content', 'goods')
         examples = [
             {
                 "id": 1,
@@ -178,7 +180,7 @@ class ReviewCreateSerializers(ModelActionSerializer):
         model = OrderReview
         fields = ('id', 'title', 'content', 'goods', 'user')
         action_fields = {
-            'create': {'fields': ('title', 'content', 'user', 'goods', 'cartItem')},
+            'create': {'fields': ('title', 'content', 'img', 'user', 'goods', 'cartItem')},
         }
         examples = {
             "title": "title exam",
@@ -211,5 +213,5 @@ class ReviewCreateSerializers(ModelActionSerializer):
             raise serializers.ValidationError('리뷰 작성이 가능한 데이터가 존재하지 않습니다.')
         return super().validate(attrs)
 
-    def create(self, validated_data):
-        return super().create(validated_data)
+    def validate_cartItem(self, value):
+        return value
